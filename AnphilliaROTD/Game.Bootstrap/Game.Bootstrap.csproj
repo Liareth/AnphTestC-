@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Game.NWN\Game.NWN.csproj" />
+    <ProjectReference Include="..\Game\Game.csproj" />
+  </ItemGroup>
+
+</Project>
