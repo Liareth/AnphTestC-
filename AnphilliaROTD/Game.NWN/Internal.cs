@@ -308,9 +308,26 @@ namespace Game.NWN
 
         public static BootstrapArgs NativeFunctions { get; private set; }
 
-        public static void Init(BootstrapArgs nativeFunctions)
+        public static bool Init(IntPtr arg, int argLength)
         {
-            NativeFunctions = nativeFunctions;
+            if (arg == (IntPtr)0)
+            {
+                Console.WriteLine("Received NULL bootstrap structure");
+                return false;
+            }
+            int expectedLength = System.Runtime.InteropServices.Marshal.SizeOf(typeof(NWN.Internal.BootstrapArgs));
+            if (argLength < expectedLength)
+            {
+                Console.WriteLine($"Received bootstrap structure too small - actual={argLength}, expected={expectedLength}");
+                return false;
+            }
+            if (argLength > expectedLength)
+            {
+                Console.WriteLine($"WARNING: Received bootstrap structure bigger than expected - actual={argLength}, expected={expectedLength}");
+                Console.WriteLine($"         This usually means that native code version is ahead of the managed code");
+            }
+
+            NativeFunctions = Marshal.PtrToStructure<NWN.Internal.BootstrapArgs>(arg);
 
             AllHandlers handlers;
             handlers.MainLoop = MainLoopHandler;
@@ -322,6 +339,8 @@ namespace Game.NWN
             Marshal.StructureToPtr(handlers, ptr, false);
             NativeFunctions.RegisterHandlers(ptr, (uint)size);
             Marshal.FreeHGlobal(ptr);
+
+            return true;
         }
     }
 }
