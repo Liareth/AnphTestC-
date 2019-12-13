@@ -37,7 +37,7 @@ namespace Game.NWN
             public string ScriptName;
         }
 
-        private static Stack<ScriptContext> ScriptContexts = new Stack<ScriptContext>();
+        private static readonly Stack<ScriptContext> ScriptContexts = new Stack<ScriptContext>();
 
         private static int RunScriptHandler(string script, uint oidSelf)
         {
@@ -64,10 +64,11 @@ namespace Game.NWN
         }
 
         private static ulong NextEventId = 0;
-        private static Dictionary<ulong, Closure> Closures = new Dictionary<ulong, Closure>();
+        private static readonly Dictionary<ulong, Closure> Closures = new Dictionary<ulong, Closure>();
 
         private static void ClosureHandler(ulong eid, uint oidSelf)
         {
+            uint old = OBJECT_SELF;
             OBJECT_SELF = oidSelf;
             try
             {
@@ -78,6 +79,7 @@ namespace Game.NWN
                 Console.WriteLine(e.ToString());
             }
             Closures.Remove(eid);
+            OBJECT_SELF = old;
         }
 
         public static void ClosureAssignCommand(uint obj, ActionDelegate func)
@@ -315,7 +317,7 @@ namespace Game.NWN
                 Console.WriteLine("Received NULL bootstrap structure");
                 return false;
             }
-            int expectedLength = System.Runtime.InteropServices.Marshal.SizeOf(typeof(NWN.Internal.BootstrapArgs));
+            int expectedLength = Marshal.SizeOf(typeof(Internal.BootstrapArgs));
             if (argLength < expectedLength)
             {
                 Console.WriteLine($"Received bootstrap structure too small - actual={argLength}, expected={expectedLength}");
@@ -327,7 +329,7 @@ namespace Game.NWN
                 Console.WriteLine($"         This usually means that native code version is ahead of the managed code");
             }
 
-            NativeFunctions = Marshal.PtrToStructure<NWN.Internal.BootstrapArgs>(arg);
+            NativeFunctions = Marshal.PtrToStructure<Internal.BootstrapArgs>(arg);
 
             AllHandlers handlers;
             handlers.MainLoop = MainLoopHandler;
